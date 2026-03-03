@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partidos - Futbol Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50">
+    <!-- Navegación -->
+  <!-- Barra de navegación mejorada y responsive -->
+<nav class="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Logo y nombre -->
+            <div class="flex items-center">
+                <h1 class="text-xl sm:text-2xl font-bold flex items-center">
+                    <i class="fas fa-futbol mr-2 text-yellow-300"></i>
+                    <span class="hidden xs:inline">Futbol Stats Pro</span>
+                    <span class="xs:hidden">FSP</span>
+                </h1>
+            </div>
+
+            <!-- Botón de menú móvil -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Navegación desktop -->
+            <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
+                <a href="/" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-home mr-1"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="/equipos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    <span>Equipos</span>
+                </a>
+                <a href="/jugadores" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-users mr-1"></i>
+                    <span>Jugadores</span>
+                </a>
+                <a href="/partidos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    <span>Partidos</span>
+                </a>
+                <a href="/estadisticas" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    <span>Estadísticas</span>
+                </a>
+            </div>
+
+            <!-- Botones exportar/importar -->
+            <div class="hidden md:flex items-center space-x-2">
+                <button onclick="exportarDB()" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-download mr-1"></i>
+                    <span class="hidden lg:inline">Exportar</span>
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-upload mr-1"></i>
+                    <span class="hidden lg:inline">Importar</span>
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".db" onchange="importarDB(this)">
+            </div>
+        </div>
+
+        <!-- Menú móvil desplegable -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 space-y-2">
+            <a href="/" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-home mr-2"></i>Inicio
+            </a>
+            <a href="/equipos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-shield-alt mr-2"></i>Equipos
+            </a>
+            <a href="/jugadores" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-users mr-2"></i>Jugadores
+            </a>
+            <a href="/partidos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-calendar-alt mr-2"></i>Partidos
+            </a>
+            <a href="/estadisticas" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+            </a>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="exportarDB()" class="flex-1 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-download mr-1"></i>Exportar
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-upload mr-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+// Toggle menú móvil
+document.getElementById('menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+});
+
+function exportarDB() {
+    window.location.href = '/api/exportar';
+}
+
+function importarDB(input) {
+    if (input.files && input.files[0]) {
+        const formData = new FormData();
+        formData.append('database', input.files[0]);
+        
+        fetch('/api/importar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert('✅ Base de datos importada correctamente');
+                location.reload();
+            } else {
+                alert('❌ Error al importar: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Error al importar: ' + error.message);
+        });
+    }
+}
+</script>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Registro de Partidos</h2>
+            <button onclick="abrirModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center">
+                <i class="fas fa-plus mr-2"></i>Nuevo Partido
+            </button>
+        </div>
+
+        <!-- Lista de partidos -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jornada</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visitante</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <% if (partidos && partidos.length > 0) { %>
+                            <% partidos.forEach(partido => { %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <%= new Date(partido.fecha).toLocaleDateString() %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    Jornada <%= partido.jornada || 1 %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="font-medium" style="color: <%= partido.local_color %>">
+                                        <%= partido.local_nombre %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="text-2xl font-bold <%= partido.goles_local > partido.goles_visitante ? 'text-green-600' : 'text-gray-600' %>">
+                                            <%= partido.goles_local %>
+                                        </span>
+                                        <span class="text-gray-400">-</span>
+                                        <span class="text-2xl font-bold <%= partido.goles_visitante > partido.goles_local ? 'text-green-600' : 'text-gray-600' %>">
+                                            <%= partido.goles_visitante %>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="font-medium" style="color: <%= partido.visitante_color %>">
+                                        <%= partido.visitante_nombre %>
+                                    </span>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                    No hay partidos registrados
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo partido -->
+    <div id="modalPartido" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-bold mb-6">Registrar Nuevo Partido</h3>
+            <form id="formPartido">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Equipo Local *</label>
+                            <select id="equipo_local_id" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                                <option value="">Seleccionar</option>
+                                <% equipos.forEach(equipo => { %>
+                                <option value="<%= equipo.id %>"><%= equipo.nombre %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Goles Local</label>
+                            <input type="number" id="goles_local" min="0" value="0" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Equipo Visitante *</label>
+                            <select id="equipo_visitante_id" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                                <option value="">Seleccionar</option>
+                                <% equipos.forEach(equipo => { %>
+                                <option value="<%= equipo.id %>"><%= equipo.nombre %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Goles Visitante</label>
+                            <input type="number" id="goles_visitante" min="0" value="0" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Fecha</label>
+                            <input type="date" id="fecha" value="<%= new Date().toISOString().split('T')[0] %>" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Jornada</label>
+                            <input type="number" id="jornada" min="1" value="1" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="cerrarModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() {
+            document.getElementById('modalPartido').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalPartido').style.display = 'none';
+        }
+
+        document.getElementById('formPartido').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const partido = {
+                equipo_local_id: document.getElementById('equipo_local_id').value,
+                equipo_visitante_id: document.getElementById('equipo_visitante_id').value,
+                goles_local: document.getElementById('goles_local').value,
+                goles_visitante: document.getElementById('goles_visitante').value,
+                fecha: document.getElementById('fecha').value,
+                jornada: document.getElementById('jornada').value
+            };
+
+            if (partido.equipo_local_id === partido.equipo_visitante_id) {
+                alert('El equipo local y visitante no pueden ser el mismo');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/partidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(partido)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Partido registrado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error al registrar partido');
+            }
+        });
+    </script>
+</body>
+</html>

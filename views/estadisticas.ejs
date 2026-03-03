@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadísticas - Futbol Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50">
+    <!-- Navegación -->
+  <!-- Barra de navegación mejorada y responsive -->
+<nav class="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Logo y nombre -->
+            <div class="flex items-center">
+                <h1 class="text-xl sm:text-2xl font-bold flex items-center">
+                    <i class="fas fa-futbol mr-2 text-yellow-300"></i>
+                    <span class="hidden xs:inline">Futbol Stats Pro</span>
+                    <span class="xs:hidden">FSP</span>
+                </h1>
+            </div>
+
+            <!-- Botón de menú móvil -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Navegación desktop -->
+            <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
+                <a href="/" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-home mr-1"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="/equipos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    <span>Equipos</span>
+                </a>
+                <a href="/jugadores" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-users mr-1"></i>
+                    <span>Jugadores</span>
+                </a>
+                <a href="/partidos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    <span>Partidos</span>
+                </a>
+                <a href="/estadisticas" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    <span>Estadísticas</span>
+                </a>
+            </div>
+
+            <!-- Botones exportar/importar -->
+            <div class="hidden md:flex items-center space-x-2">
+                <button onclick="exportarDB()" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-download mr-1"></i>
+                    <span class="hidden lg:inline">Exportar</span>
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-upload mr-1"></i>
+                    <span class="hidden lg:inline">Importar</span>
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".db" onchange="importarDB(this)">
+            </div>
+        </div>
+
+        <!-- Menú móvil desplegable -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 space-y-2">
+            <a href="/" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-home mr-2"></i>Inicio
+            </a>
+            <a href="/equipos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-shield-alt mr-2"></i>Equipos
+            </a>
+            <a href="/jugadores" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-users mr-2"></i>Jugadores
+            </a>
+            <a href="/partidos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-calendar-alt mr-2"></i>Partidos
+            </a>
+            <a href="/estadisticas" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+            </a>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="exportarDB()" class="flex-1 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-download mr-1"></i>Exportar
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-upload mr-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+// Toggle menú móvil
+document.getElementById('menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+});
+
+function exportarDB() {
+    window.location.href = '/api/exportar';
+}
+
+function importarDB(input) {
+    if (input.files && input.files[0]) {
+        const formData = new FormData();
+        formData.append('database', input.files[0]);
+        
+        fetch('/api/importar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert('✅ Base de datos importada correctamente');
+                location.reload();
+            } else {
+                alert('❌ Error al importar: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Error al importar: ' + error.message);
+        });
+    }
+}
+</script>
+
+    <div class="container mx-auto px-6 py-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">Estadísticas Completas</h2>
+
+        <!-- Tarjetas de resumen -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-trophy text-2xl text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Total Partidos</p>
+                        <p class="text-2xl font-bold text-gray-800"><%= tablaPosiciones.length > 0 ? tablaPosiciones.reduce((sum, e) => sum + e.pj, 0) / 2 : 0 %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-futbol text-2xl text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Total Goles</p>
+                        <p class="text-2xl font-bold text-gray-800"><%= tablaPosiciones.reduce((sum, e) => sum + e.gf, 0) %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <i class="fas fa-chart-line text-2xl text-yellow-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Promedio Goles</p>
+                        <p class="text-2xl font-bold text-gray-800"><% 
+                            let totalGoles = tablaPosiciones.reduce((sum, e) => sum + e.gf, 0);
+                            let totalPartidos = tablaPosiciones.length > 0 ? tablaPosiciones.reduce((sum, e) => sum + e.pj, 0) / 2 : 0;
+                            let promedio = totalPartidos > 0 ? (totalGoles / totalPartidos).toFixed(2) : 0;
+                        %><%= promedio %></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-shield-alt text-2xl text-purple-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Equipos</p>
+                        <p class="text-2xl font-bold text-gray-800"><%= tablaPosiciones.length %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de posiciones -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-list-ol text-green-600 mr-3"></i>
+                Tabla de Posiciones
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipo</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PJ</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PG</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PE</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PP</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">GF</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">GC</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">DIF</th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <% if (tablaPosiciones && tablaPosiciones.length > 0) { %>
+                            <% tablaPosiciones.forEach((equipo, index) => { %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="<%= index < 4 ? 'text-green-600 font-bold' : '' %>"><%= index + 1 %></span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-4 h-4 rounded-full mr-2" style="background-color: <%= equipo.color || '#10b981' %>"></div>
+                                        <span class="font-medium"><%= equipo.nombre %></span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center"><%= equipo.pj || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-green-600"><%= equipo.pg || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-yellow-600"><%= equipo.pe || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-red-600"><%= equipo.pp || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center"><%= equipo.gf || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center"><%= equipo.gc || 0 %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center <%= (equipo.dif || 0) > 0 ? 'text-green-600' : (equipo.dif || 0) < 0 ? 'text-red-600' : '' %>">
+                                    <%= equipo.dif || 0 %>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-center font-bold text-lg"><%= equipo.puntos || 0 %></td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                                    No hay datos disponibles para mostrar
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Goleadores y Asistentes -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Tabla de Goleadores -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-fire text-orange-500 mr-3"></i>
+                    Máximos Goleadores
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipo</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Goles</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Partidos</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Promedio</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <% if (goleadores && goleadores.length > 0) { %>
+                                <% goleadores.forEach((jugador, index) => { %>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="<%= index < 3 ? 'text-yellow-500 font-bold' : '' %>"><%= index + 1 %></span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap font-medium"><%= jugador.nombre %></td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-sm rounded-full" style="background-color: <%= jugador.equipo_color || '#10b981' %>20; color: <%= jugador.equipo_color || '#10b981' %>">
+                                            <%= jugador.equipo_nombre || 'Sin equipo' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-lg text-green-600"><%= jugador.goles || 0 %></td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center"><%= jugador.partidos || 0 %></td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                        <%= jugador.partidos > 0 ? (jugador.goles / jugador.partidos).toFixed(2) : '0.00' %>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                                        No hay goleadores registrados
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabla de Asistentes -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-hands-helping text-blue-500 mr-3"></i>
+                    Máximos Asistentes
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jugador</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipo</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Asistencias</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <% if (asistentes && asistentes.length > 0) { %>
+                                <% asistentes.forEach((jugador, index) => { %>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="<%= index < 3 ? 'text-yellow-500 font-bold' : '' %>"><%= index + 1 %></span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap font-medium"><%= jugador.nombre %></td>
+                                    <td class="px-4 py-3 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-sm rounded-full" style="background-color: <%= jugador.equipo_color || '#10b981' %>20; color: <%= jugador.equipo_color || '#10b981' %>">
+                                            <%= jugador.equipo_nombre || 'Sin equipo' %>
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-lg text-blue-600"><%= jugador.asistencias || 0 %></td>
+                                </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                                        No hay asistentes registrados
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas y Fair Play -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <!-- Tarjetas Amarillas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-square text-yellow-400 mr-3"></i>
+                    Tarjetas Amarillas
+                </h3>
+                <p class="text-gray-500 text-center py-4">Próximamente: Estadísticas de tarjetas</p>
+            </div>
+
+            <!-- Tarjetas Rojas -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-square text-red-500 mr-3"></i>
+                    Tarjetas Rojas
+                </h3>
+                <p class="text-gray-500 text-center py-4">Próximamente: Estadísticas de tarjetas</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones adicionales si son necesarias
+    </script>
+</body>
+</html>

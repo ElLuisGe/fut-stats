@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipos - Futbol Stats</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50">
+    <!-- Navegación -->
+<!-- Barra de navegación mejorada y responsive -->
+<nav class="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between">
+            <!-- Logo y nombre -->
+            <div class="flex items-center">
+                <h1 class="text-xl sm:text-2xl font-bold flex items-center">
+                    <i class="fas fa-futbol mr-2 text-yellow-300"></i>
+                    <span class="hidden xs:inline">Futbol Stats Pro</span>
+                    <span class="xs:hidden">FSP</span>
+                </h1>
+            </div>
+
+            <!-- Botón de menú móvil -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Navegación desktop -->
+            <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
+                <a href="/" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-home mr-1"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="/equipos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    <span>Equipos</span>
+                </a>
+                <a href="/jugadores" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-users mr-1"></i>
+                    <span>Jugadores</span>
+                </a>
+                <a href="/partidos" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-calendar-alt mr-1"></i>
+                    <span>Partidos</span>
+                </a>
+                <a href="/estadisticas" class="hover:bg-green-500 hover:bg-opacity-30 px-3 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    <span>Estadísticas</span>
+                </a>
+            </div>
+
+            <!-- Botones exportar/importar -->
+            <div class="hidden md:flex items-center space-x-2">
+                <button onclick="exportarDB()" class="bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-download mr-1"></i>
+                    <span class="hidden lg:inline">Exportar</span>
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center">
+                    <i class="fas fa-upload mr-1"></i>
+                    <span class="hidden lg:inline">Importar</span>
+                </button>
+                <input type="file" id="importFile" class="hidden" accept=".db" onchange="importarDB(this)">
+            </div>
+        </div>
+
+        <!-- Menú móvil desplegable -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 space-y-2">
+            <a href="/" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-home mr-2"></i>Inicio
+            </a>
+            <a href="/equipos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-shield-alt mr-2"></i>Equipos
+            </a>
+            <a href="/jugadores" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-users mr-2"></i>Jugadores
+            </a>
+            <a href="/partidos" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-calendar-alt mr-2"></i>Partidos
+            </a>
+            <a href="/estadisticas" class="block hover:bg-green-500 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+            </a>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="exportarDB()" class="flex-1 bg-blue-500 hover:bg-blue-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-download mr-1"></i>Exportar
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-purple-500 hover:bg-purple-600 px-3 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fas fa-upload mr-1"></i>Importar
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+// Toggle menú móvil
+document.getElementById('menu-toggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+});
+
+function exportarDB() {
+    window.location.href = '/api/exportar';
+}
+
+function importarDB(input) {
+    if (input.files && input.files[0]) {
+        const formData = new FormData();
+        formData.append('database', input.files[0]);
+        
+        fetch('/api/importar', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                alert('✅ Base de datos importada correctamente');
+                location.reload();
+            } else {
+                alert('❌ Error al importar: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Error al importar: ' + error.message);
+        });
+    }
+}
+</script>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Gestión de Equipos</h2>
+            <button onclick="abrirModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center">
+                <i class="fas fa-plus mr-2"></i>Nuevo Equipo
+            </button>
+        </div>
+
+        <!-- Lista de equipos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% equipos.forEach(equipo => { %>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
+                <div class="h-2" style="background-color: <%= equipo.color || '#10b981' %>"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-800"><%= equipo.nombre %></h3>
+                        <button onclick="eliminarEquipo(<%= equipo.id %>)" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-2 text-gray-600">
+                        <p><i class="fas fa-map-marker-alt mr-2"></i> <%= equipo.estadio || 'Sin estadio' %></p>
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <div class="text-center p-2 bg-gray-50 rounded">
+                                <p class="text-sm text-gray-500">PJ</p>
+                                <p class="text-xl font-bold"><%= equipo.partidos_jugados || 0 %></p>
+                            </div>
+                            <div class="text-center p-2 bg-gray-50 rounded">
+                                <p class="text-sm text-gray-500">PG</p>
+                                <p class="text-xl font-bold"><%= equipo.partidos_ganados || 0 %></p>
+                            </div>
+                            <div class="text-center p-2 bg-gray-50 rounded">
+                                <p class="text-sm text-gray-500">GF</p>
+                                <p class="text-xl font-bold"><%= equipo.goles_favor || 0 %></p>
+                            </div>
+                            <div class="text-center p-2 bg-gray-50 rounded">
+                                <p class="text-sm text-gray-500">GC</p>
+                                <p class="text-xl font-bold"><%= equipo.goles_contra || 0 %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo equipo -->
+    <div id="modalEquipo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-bold mb-6">Agregar Nuevo Equipo</h3>
+            <form id="formEquipo">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2">Nombre del equipo *</label>
+                        <input type="text" id="nombre" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Color representativo</label>
+                        <input type="color" id="color" value="#10b981" class="w-full h-10 px-1 py-1 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Estadio</label>
+                        <input type="text" id="estadio" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-green-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="cerrarModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() {
+            document.getElementById('modalEquipo').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalEquipo').style.display = 'none';
+        }
+
+        document.getElementById('formEquipo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const equipo = {
+                nombre: document.getElementById('nombre').value,
+                color: document.getElementById('color').value,
+                estadio: document.getElementById('estadio').value
+            };
+
+            try {
+                const response = await fetch('/api/equipos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(equipo)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Equipo agregado correctamente');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error al agregar equipo');
+            }
+        });
+
+        async function eliminarEquipo(id) {
+            if (confirm('¿Estás seguro de eliminar este equipo?')) {
+                try {
+                    const response = await fetch('/api/equipos/' + id, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('Equipo eliminado');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    alert('Error al eliminar equipo');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
